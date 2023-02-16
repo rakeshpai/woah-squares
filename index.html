@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Woah! Squares</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      background: #222;
+      color: #ddd;
+      color-scheme: dark;
+    }
+
+    body {
+      font-family: 'Courier New', Courier, monospace;
+      scroll-behavior: smooth;
+    }
+
+    a {
+      color: aqua
+    }
+
+    form {
+      max-width: 26em;
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 0.3em;
+    }
+
+    button {
+      appearance: none;
+      border: 0;
+      background:rgb(81, 139, 15);
+      color: #eee;
+      font-size: 1.2em;
+      padding: 0.5em 1em;
+    }
+
+    #canvas {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+      max-width: 34em;
+      margin: 0 auto;
+      gap: 0.2em;
+    }
+
+    #canvas > div {
+      background: #333;
+      text-align: center;
+      padding: 1px 2px;
+    }
+
+    #canvas > div.on {
+      background: rgb(81, 139, 15);
+    }
+
+    #canvas > div > span {
+      display: block;
+      font-size: 1.4em;
+      padding: 0.2em;
+    }
+
+    #canvas > div > span:nth-child(2) {
+      display: block;
+      font-size: 1em;
+    }
+
+    #canvas > div > span:nth-child(2):before {
+      content: '#'
+    }
+  </style>
+</head>
+<body>
+  <h1>The Light Switch Problem</h1>
+
+  <p>
+    This is a simulation of the problem
+    <a href="https://www.youtube.com/watch?v=-UBDRX6bk-A">described in this YouTube video</a>.
+  </p>
+  <p>Imagine there are 100 light switches infront of you, and they are all off.</p>
+  <ul>
+    <li>The first person comes along and turns them all on.</li>
+    <li>The second person toggles every second light switch.</li>
+    <li>The third person toggles every third light switch.</li>
+    <li>...and so on, for a 100 people.</li>
+  </ul>
+
+  <form>
+    <label for="numberOfSwitches">
+      Number of light switches:
+    </label>
+    <input type="text" inputmode="numeric" value="100"
+      id="numberOfSwitches" required pattern="[0-9]+">
+    <label for="delay">
+      Switch toggle delay (ms):
+    </label>
+    <input type="text" inputmode="numeric" value="50"
+      id="delay" required pattern="[0-9]+">
+
+    <div>
+      <button>Simulate!</button>
+    </div>
+  </form>
+  <p>
+    # number in the cell is the number of times it has been toggled
+  </p>
+
+  <div id="canvas" />
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const wait = delay => () => new Promise(r => { setTimeout(r, delay) });
+
+    document.getElementsByTagName('form')[0].onsubmit = e => {
+      e.preventDefault();
+      const [switchesInput, delayInput] = e.target.elements;
+      const switches = parseInt(switchesInput.value, 10);
+      const delay = parseInt(delayInput.value, 10);
+
+      const arr = [...new Array(switches)];
+
+      canvas.innerHTML = arr.map(
+        (_, index) =>`<div><span>${index + 1}</span><span class="tc">0</span></div>`
+      ).join("");
+
+      canvas.scrollIntoView();
+
+      arr.reduce((a, _, person) => {
+        return a
+          .then(wait(delay))
+          .then(() => {
+            return arr.reduce((a, _, switchIdx) => {
+              if (person < 3) {
+                console.log(person, switchIdx, (switchIdx + 1) % (person + 1));
+              }
+              if ((switchIdx + 1) % (person + 1) !== 0) return a;
+              return a.then(wait(delay)).then(() => {
+                const switchDiv = canvas.querySelectorAll(':scope > div')[switchIdx]
+                switchDiv.classList.toggle('on');
+                switchDiv.getElementsByTagName('span')[1].innerText = 
+                  parseInt(switchDiv.getElementsByTagName('span')[1].innerText, 10) + 1
+              })
+            }, Promise.resolve());
+          })
+      }, Promise.resolve())
+    };
+  </script>
+</body>
+</html>
