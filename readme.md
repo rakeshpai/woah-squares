@@ -8,3 +8,5 @@ Imagine there are 100 light switches infront of you, and they are all off.
 * The second person toggles every second light switch.
 * The third person toggles every third light switch.
 * ...and so on, for a 100 people.
+
+[View simulation](https://rakeshpai.github.io/woah-squares/)
